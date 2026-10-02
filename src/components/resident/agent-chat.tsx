@@ -35,6 +35,8 @@ interface Props {
   residentName: string;
   apartmentNumber: string;
   communityName: string;
+  /** Optional override for the first message sent automatically on mount */
+  initialMessage?: string;
 }
 
 const THINKING_MESSAGES = [
@@ -51,6 +53,7 @@ export function AgentChat({
   residentName,
   apartmentNumber,
   communityName,
+  initialMessage,
 }: Props) {
   const router = useRouter();
   const typeLabel = type === "MOVE_IN" ? "move-in" : "move-out";
@@ -98,10 +101,10 @@ export function AgentChat({
 
   // Send initial greeting on mount
   useEffect(() => {
-    sendMessage(
-      `Hi! I'd like to start a ${typeLabel} request for apartment ${apartmentNumber}.`,
-      true
-    );
+    const greeting =
+      initialMessage ??
+      `Hi! I'd like to start a ${typeLabel} request for apartment ${apartmentNumber}.`;
+    sendMessage(greeting, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

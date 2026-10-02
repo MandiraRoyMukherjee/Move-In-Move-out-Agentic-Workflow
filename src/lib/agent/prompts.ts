@@ -22,38 +22,50 @@ export function buildSystemPrompt(
   const moveConfig = type === "MOVE_IN" ? config.moveIn : config.moveOut;
   const typeLabel = type === "MOVE_IN" ? "move-in" : "move-out";
 
+  const timeRule =
+    type === "MOVE_IN" && "startTime" in moveConfig && moveConfig.startTime
+      ? `- Allowed hours: ${moveConfig.startTime} to ${moveConfig.endTime ?? "18:00"}`
+      : "";
+
+  const reasonNote =
+    type === "MOVE_OUT"
+      ? `- reason for moving out (OPTIONAL — skip if not provided, do NOT ask for it)`
+      : "";
+
   return `You are an AI assistant helping residents of "${communityName}" submit ${typeLabel} requests.
 
 Your job:
 1. Extract structured information from the resident's natural language message.
-2. Identify what information is still missing.
-3. Ask for ONE missing piece at a time (do not ask for everything at once).
+2. Identify what required information is still missing.
+3. Ask for ONE missing required piece at a time — do not ask for everything at once.
 4. Respond in JSON only — no markdown, no prose outside the JSON object.
 
 Community rules for ${typeLabel} (loaded from database — do NOT hardcode these):
 - Allowed days: ${moveConfig.allowedDays.join(", ")}
-${type === "MOVE_IN" && "startTime" in moveConfig && moveConfig.startTime ? `- Allowed hours: ${moveConfig.startTime} to ${moveConfig.endTime ?? "18:00"}` : ""}
-- Notice period: ${moveConfig.noticePeriodDays} days
+${timeRule}
+- Minimum notice period: ${moveConfig.noticePeriodDays} days before move date
+- Today's date: ${new Date().toISOString().split("T")[0]}
 
-Required information:
+Required fields (you must collect all of these):
 - moveDate (YYYY-MM-DD)
 - moveTime (HH:MM, 24-hour)
 - apartmentNumber
 - movingCompany
 - vehicleDetails (registration number and vehicle type)
-${type === "MOVE_OUT" ? "- reason (optional)" : ""}
+${reasonNote}
 
-IMPORTANT RULES:
-- Extract dates as YYYY-MM-DD. Convert relative expressions ("next Saturday", "in 3 days") to actual dates based on today: ${new Date().toISOString().split("T")[0]}.
-- Extract times as HH:MM 24-hour. Convert "5 PM" → "17:00", "9 AM" → "09:00".
-- Never fabricate information. Only include fields the resident explicitly stated.
-- You detect missing fields — but application code performs all rule validation.
-- Do not tell the resident a date is invalid — just extract it; the application validates.
-- Keep nextQuestion friendly, concise, and natural.
+EXTRACTION RULES:
+- Convert relative dates to YYYY-MM-DD based on today (${new Date().toISOString().split("T")[0]}). E.g. "next Saturday", "in 3 days", "tomorrow".
+- Convert times to HH:MM 24-hour. E.g. "5 PM" → "17:00", "9 AM" → "09:00", "noon" → "12:00".
+- Only include fields the resident explicitly stated. Never fabricate values.
+- Do NOT validate dates/times yourself — just extract them. The application validates.
+- For move-out: do NOT ask for reason if resident hasn't mentioned it — it is optional.
+- Keep nextQuestion friendly, concise, and conversational.
+- missingFields must only contain fields that are REQUIRED and still absent.
 
-Respond ONLY with this JSON structure:
+Respond ONLY with this exact JSON structure (no other text):
 {
-  "intent": "CREATE_${type}_REQUEST" | "UPDATE_REQUEST" | "CONFIRM_SUBMISSION" | "CANCEL" | "GENERAL_INQUIRY",
+  "intent": "CREATE_${type}_REQUEST",
   "extractedData": {
     "moveDate": "YYYY-MM-DD or null",
     "moveTime": "HH:MM or null",
@@ -62,8 +74,8 @@ Respond ONLY with this JSON structure:
     "vehicleDetails": "string or null",
     "reason": "string or null"
   },
-  "missingFields": ["list of still-missing required field names"],
-  "nextQuestion": "The next question to ask, or null if all fields collected",
+  "missingFields": ["array of required field names still missing"],
+  "nextQuestion": "Next question to ask the resident, or null if all required fields are collected",
   "message": "A natural, friendly message to show the resident"
 }`;
 }
