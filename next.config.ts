@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
   // Ensure server-only modules are not bundled for the client
   serverExternalPackages: [
     "@prisma/client",
-    "@prisma/adapter-libsql",
-    "@libsql/client",
+    "@prisma/adapter-pg",
+    "pg",
     "groq-sdk",
   ],
 };

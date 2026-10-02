@@ -1,21 +1,17 @@
 /**
- * Prisma Client singleton for Next.js — Prisma v7 with libsql driver adapter
+ * Prisma Client singleton for Next.js — Prisma v7 with pg driver adapter (Neon PostgreSQL).
  * Prevents multiple instances during hot-reload in development.
  * Import this everywhere instead of creating new PrismaClient().
- *
- * Prisma v7 requires a driver adapter (not a direct URL in schema).
- * For SQLite we use @prisma/adapter-libsql + @libsql/client.
- * To swap to PostgreSQL: replace with @prisma/adapter-pg.
  */
 
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 function createPrismaClient() {
-  const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL environment variable is not set");
 
-  // libsql accepts "file:./path" directly — PrismaLibSql takes a Config object
-  const adapter = new PrismaLibSql({ url });
+  const adapter = new PrismaPg({ connectionString: url });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new PrismaClient({ adapter } as any);

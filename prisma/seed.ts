@@ -10,12 +10,15 @@
  * Run: npm run db:seed
  */
 
+import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { generateRequestNumber } from "../src/lib/utils";
 
-// Seed uses a direct client instance (not the singleton)
-const adapter = new PrismaLibSql({ url: "file:./prisma/dev.db" });
+// Seed uses the DATABASE_URL from .env / environment
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error("DATABASE_URL is not set");
+const adapter = new PrismaPg({ connectionString: url });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma = new PrismaClient({ adapter } as any);
 

@@ -1,5 +1,5 @@
 // ANACITY Move-In / Move-Out Agentic Workflow
-// Prisma schema with SQLite (swappable to PostgreSQL via provider change)
+// Prisma schema — PostgreSQL (Neon)
 
 generator client {
   provider = "prisma-client"
@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Community {
