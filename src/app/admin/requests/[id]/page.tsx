@@ -20,6 +20,7 @@ import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Timeline } from "@/components/ui/timeline";
 import { AdminActionPanel } from "@/components/admin/admin-action-panel";
+import { GenerateSummaryButton } from "@/components/admin/generate-summary-button";
 import { formatDate, formatTime, formatDateTime } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -247,10 +248,12 @@ export default async function AdminRequestDetailPage({ params }: Props) {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-gray-500 italic">
-                  AI assessment will appear here after the agent processes the
-                  request.
-                </p>
+                <div>
+                  <p className="text-sm text-gray-500 italic mb-2">
+                    No AI assessment yet.
+                  </p>
+                  <GenerateSummaryButton requestId={request.id} />
+                </div>
               )}
             </CardContent>
           </Card>
