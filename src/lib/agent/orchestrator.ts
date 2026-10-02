@@ -86,7 +86,7 @@ export async function orchestrate(
         { role: "system", content: systemPrompt },
         ...toConversationHistory(updatedMessages),
       ],
-      { model: GROQ_MODEL, temperature: 0.1, maxTokens: 512 }
+      { model: GROQ_MODEL, temperature: 0.1, maxTokens: 1000 }
     );
   } catch {
     // LLM failure — preserve state, return graceful error (plan §20)
@@ -231,7 +231,7 @@ export async function orchestrate(
           ),
         },
       ],
-      { model: GROQ_MODEL, temperature: 0.1, maxTokens: 256 }
+      { model: GROQ_MODEL, temperature: 0.1, maxTokens: 500 }
     );
     agentSummary = summaryOutput.summary;
     agentRecommendation = summaryOutput.recommendation;

@@ -3,8 +3,11 @@
  * Uses the Groq SDK. Structured around a simple interface so the provider
  * can be swapped (e.g., OpenAI, Anthropic) without changing callers.
  *
- * Model: llama-3.1-8b-instant (free tier, fast, capable)
- * Fallback: llama-3.1-70b-versatile if higher quality needed
+ * Model: openai/gpt-oss-20b — available on Groq free tier, fast JSON output
+ * Fallback: openai/gpt-oss-120b for higher quality
+ *
+ * NOTE: response_format: json_object is NOT used — this model works best with
+ * strong system prompt instructions + JSON extraction from text output.
  */
 
 import Groq from "groq-sdk";
@@ -18,9 +21,9 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// Best free model balancing speed and quality for structured JSON output
-export const GROQ_MODEL = "llama-3.1-8b-instant";
-export const GROQ_MODEL_SMART = "llama-3.3-70b-versatile";
+// Current working models on Groq free tier
+export const GROQ_MODEL = "openai/gpt-oss-20b";
+export const GROQ_MODEL_SMART = "openai/gpt-oss-120b";
 
 export interface LLMMessage {
   role: "system" | "user" | "assistant";
@@ -52,14 +55,15 @@ export async function callLLM(
 ): Promise<LLMResponse> {
   const model = options?.model ?? GROQ_MODEL;
   const temperature = options?.temperature ?? 0.1; // Low temp for deterministic structured output
-  const maxTokens = options?.maxTokens ?? 1024;
+  const maxTokens = options?.maxTokens ?? 1500; // gpt-oss-20b needs more tokens for JSON
 
   const completion = await groq.chat.completions.create({
     model,
     messages,
     temperature,
     max_tokens: maxTokens,
-    ...(options?.jsonMode ? { response_format: { type: "json_object" } } : {}),
+    // response_format json_object not used — openai/gpt-oss-20b works better
+    // with explicit JSON instructions in the system prompt + text extraction
   });
 
   const content = completion.choices[0]?.message?.content ?? "";
