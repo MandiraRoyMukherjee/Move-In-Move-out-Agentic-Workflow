@@ -101,7 +101,7 @@ export function AdminActionPanel({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Add a note or message for the resident…"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+                className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none placeholder:text-gray-400"
               />
             </div>
 

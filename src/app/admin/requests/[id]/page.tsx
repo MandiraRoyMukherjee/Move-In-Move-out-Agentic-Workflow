@@ -34,6 +34,7 @@ import {
   Bot,
   ShieldCheck,
   AlertCircle,
+  MessageCircle,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,21 @@ export default async function AdminRequestDetailPage({ params }: Props) {
   const canAct = ["UNDER_REVIEW", "MORE_INFORMATION_REQUIRED"].includes(
     request.status
   );
+
+  // Extract the most recent resident-provided additional info from the audit log
+  const residentInfoLog = request.auditLogs
+    ?.filter((l) => l.action === "RESIDENT_PROVIDED_INFORMATION")
+    .at(-1);
+  const residentAdditionalInfo = residentInfoLog?.details
+    ? (() => {
+        try {
+          const parsed = JSON.parse(residentInfoLog.details as string);
+          return typeof parsed?.info === "string" ? parsed.info : null;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
 
   return (
     <div className="p-8 max-w-5xl">
@@ -90,6 +106,21 @@ export default async function AdminRequestDetailPage({ params }: Props) {
           Created {formatDateTime(request.createdAt)}
         </p>
       </div>
+
+      {/* Resident additional info banner */}
+      {residentAdditionalInfo && (
+        <div className="mb-5 flex gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <MessageCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-blue-800 mb-0.5">
+              Resident provided additional information
+            </p>
+            <p className="text-sm text-blue-700 whitespace-pre-wrap">
+              {residentAdditionalInfo}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left column — context */}
