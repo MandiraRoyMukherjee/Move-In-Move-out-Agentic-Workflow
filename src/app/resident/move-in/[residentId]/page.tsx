@@ -23,10 +23,10 @@ export default async function MoveInResidentPage({ params }: Props) {
   if (!community) notFound();
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <Link
         href="/resident/move-in"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-5 sm:mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back

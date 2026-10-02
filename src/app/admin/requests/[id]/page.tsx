@@ -78,21 +78,21 @@ export default async function AdminRequestDetailPage({ params }: Props) {
     : null;
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-8 max-w-5xl">
       {/* Back */}
       <Link
         href="/admin/requests"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-5 sm:mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to requests
       </Link>
 
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between flex-wrap gap-3">
+      <div className="mb-5 sm:mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
               {request.type === "MOVE_IN" ? "Move-In" : "Move-Out"} Request
             </h1>
             <StatusBadge status={request.status} />
@@ -122,9 +122,9 @@ export default async function AdminRequestDetailPage({ params }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Left column — context */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
           {/* Resident */}
           <Card>
             <CardHeader>
@@ -245,7 +245,7 @@ export default async function AdminRequestDetailPage({ params }: Props) {
         </div>
 
         {/* Right column — AI assessment + actions */}
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {/* AI Assessment */}
           <Card>
             <CardHeader>

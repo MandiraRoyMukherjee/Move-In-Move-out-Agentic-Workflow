@@ -31,14 +31,14 @@ export function ResidentDashboardClient({ residents, community }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-6 sm:mb-8 flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             Welcome back{selected ? `, ${selected.name.split(" ")[0]}` : ""}!
           </h1>
-          <p className="text-gray-500 mt-1">{community.name}</p>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">{community.name}</p>
         </div>
 
         {/* Resident selector (demo auth) */}
@@ -76,7 +76,7 @@ export function ResidentDashboardClient({ residents, community }: Props) {
 
       {/* Resident info card */}
       {selected && (
-        <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-4">
+        <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3 sm:gap-4">
           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
             {selected.name[0]}
           </div>
@@ -90,7 +90,7 @@ export function ResidentDashboardClient({ residents, community }: Props) {
       )}
 
       {/* Action cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
         <Link
           href={selected ? `/resident/move-in/${selected.id}` : "/resident/move-in"}
         >
@@ -145,7 +145,7 @@ export function ResidentDashboardClient({ residents, community }: Props) {
       </div>
 
       {/* Demo notice */}
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+      <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
         <strong>Demo mode:</strong> Use the dropdown above to switch between
         residents. In production this would be replaced with real authentication.
       </div>

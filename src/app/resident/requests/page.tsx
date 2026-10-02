@@ -16,13 +16,13 @@ export default async function ResidentRequestsPage() {
   const requests = await findAllRequests();
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="w-6 h-6 text-purple-600" />
+    <div className="p-4 sm:p-8">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
           My Requests
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 mt-1 text-sm">
           Track the status of all your move requests.
         </p>
       </div>

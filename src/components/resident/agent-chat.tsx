@@ -209,11 +209,11 @@ export function AgentChat({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-2xl">
+    <div className="flex flex-col h-[calc(100vh-7rem)] lg:h-[calc(100vh-8rem)] max-w-2xl">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-3 sm:mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 capitalize">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 capitalize">
             {typeLabel} Assistant
           </h1>
           <p className="text-sm text-gray-500">
@@ -326,14 +326,14 @@ export function AgentChat({
 
         {/* Submit confirmation */}
         {state.isComplete && state.readyToSubmit && !loading && (
-          <div className="mx-4 mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between gap-3">
+          <div className="mx-3 sm:mx-4 mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
               <span className="text-sm text-green-800 font-medium">
                 Request is complete and valid
               </span>
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-2 shrink-0 w-full sm:w-auto">
               <Button
                 variant="ghost"
                 size="sm"

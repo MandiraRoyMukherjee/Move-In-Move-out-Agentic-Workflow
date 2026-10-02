@@ -44,21 +44,21 @@ export default async function ResidentRequestDetailPage({ params }: Props) {
     : null;
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
       {/* Back */}
       <Link
         href="/resident/requests"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-5 sm:mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to requests
       </Link>
 
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between flex-wrap gap-3">
+      <div className="mb-5 sm:mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
               {request.type === "MOVE_IN" ? "Move-In" : "Move-Out"} Request
             </h1>
             <StatusBadge status={request.status} />
@@ -101,7 +101,7 @@ export default async function ResidentRequestDetailPage({ params }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
         {/* Request details */}
         <Card>
           <CardHeader>

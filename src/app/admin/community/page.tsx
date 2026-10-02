@@ -13,13 +13,13 @@ export default async function AdminCommunityPage() {
   const communities = await findAllCommunities();
 
   return (
-    <div className="p-8 max-w-3xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Users className="w-6 h-6 text-purple-600" />
+    <div className="p-4 sm:p-8 max-w-3xl">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
           Community Configuration
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 mt-1 text-sm sm:text-base">
           Community-specific rules that drive the agent validation logic.
         </p>
       </div>
