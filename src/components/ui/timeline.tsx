@@ -17,14 +17,16 @@ const ACTION_LABELS: Record<string, string> = {
   REQUEST_CREATED: "Request created",
   REQUEST_UPDATED: "Request updated",
   AGENT_VALIDATED: "Agent validated request",
+  AGENT_SUMMARY_GENERATED: "AI summary generated",
   STATUS_CHANGED_TO_SUBMITTED: "Submitted for review",
   STATUS_CHANGED_TO_UNDER_REVIEW: "Under review",
-  STATUS_CHANGED_TO_APPROVED: "Approved",
-  STATUS_CHANGED_TO_REJECTED: "Rejected",
+  STATUS_CHANGED_TO_APPROVED: "✅ Approved",
+  STATUS_CHANGED_TO_REJECTED: "❌ Rejected",
   STATUS_CHANGED_TO_MORE_INFORMATION_REQUIRED: "More information requested",
   STATUS_CHANGED_TO_COMPLETED: "Completed",
   MORE_INFORMATION_REQUESTED: "Admin requested more information",
-  AGENT_SUMMARY_GENERATED: "AI summary generated",
+  RESIDENT_PROVIDED_INFORMATION: "Resident provided additional information",
+  ADMIN_VIEWED_REQUEST: "Admin opened request",
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -36,8 +38,10 @@ const ACTION_COLORS: Record<string, string> = {
   STATUS_CHANGED_TO_MORE_INFORMATION_REQUIRED: "bg-orange-500",
   STATUS_CHANGED_TO_COMPLETED: "bg-purple-500",
   MORE_INFORMATION_REQUESTED: "bg-orange-400",
+  RESIDENT_PROVIDED_INFORMATION: "bg-blue-400",
   AGENT_VALIDATED: "bg-indigo-400",
   AGENT_SUMMARY_GENERATED: "bg-indigo-400",
+  ADMIN_VIEWED_REQUEST: "bg-gray-300",
   REQUEST_UPDATED: "bg-gray-400",
 };
 
