@@ -1,0 +1,96 @@
+// ANACITY Move-In / Move-Out Agentic Workflow
+// Prisma schema with SQLite (swappable to PostgreSQL via provider change)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Community {
+  id        String   @id @default(cuid())
+  name      String
+  config    String   // JSON stored as string for SQLite compatibility
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  residents    Resident[]
+  moveRequests MoveRequest[]
+}
+
+model Resident {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  phone           String?
+  apartmentNumber String
+  communityId     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  community    Community     @relation(fields: [communityId], references: [id])
+  moveRequests MoveRequest[]
+}
+
+model MoveRequest {
+  id                String          @id @default(cuid())
+  requestNumber     String          @unique
+  type              RequestType
+  residentId        String
+  communityId       String
+  status            RequestStatus   @default(DRAFT)
+  moveDate          String?         // ISO date string
+  moveTime          String?         // HH:MM format
+  apartmentNumber   String?
+  movingCompany     String?
+  vehicleDetails    String?
+  documents         String?         // JSON array as string
+  reason            String?
+  agentSummary      String?
+  agentRecommendation String?
+  adminNotes        String?
+  conversationState String?         // JSON: agent conversation state
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  resident  Resident    @relation(fields: [residentId], references: [id])
+  community Community   @relation(fields: [communityId], references: [id])
+  auditLogs AuditLog[]
+}
+
+model AuditLog {
+  id        String    @id @default(cuid())
+  requestId String
+  actorType ActorType
+  actorId   String
+  action    String
+  details   String?   // JSON string for extra details
+  createdAt DateTime  @default(now())
+
+  request MoveRequest @relation(fields: [requestId], references: [id])
+}
+
+enum RequestType {
+  MOVE_IN
+  MOVE_OUT
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  MORE_INFORMATION_REQUIRED
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum ActorType {
+  RESIDENT
+  ADMIN
+  AGENT
+  SYSTEM
+}

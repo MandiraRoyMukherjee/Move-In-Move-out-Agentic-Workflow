@@ -1,0 +1,1850 @@
+# ANACITY Move-In / Move-Out Agentic Workflow
+
+## AI Coding Agent Development Plan
+
+## 1. Objective
+
+Build a polished working prototype for the ANACITY Move-In / Move-Out Agentic Workflow assignment.
+
+The application must support:
+
+1. Resident experience
+
+   * Move-In request
+   * Move-Out request
+   * AI-assisted request creation
+   * Request validation
+   * Request submission
+   * Request status tracking
+
+2. Administrator experience
+
+   * Admin dashboard
+   * View pending requests
+   * Review complete request context
+   * View community rules
+   * View AI-generated assessment/recommendation
+   * Approve request
+   * Reject request
+   * Request additional information
+   * Add admin notes
+
+3. Agentic workflow
+
+   * Natural-language understanding
+   * Context/state management
+   * Missing information detection
+   * Community rule retrieval
+   * Request validation
+   * AI-generated summary
+   * AI recommendation
+   * Human-in-the-loop approval
+   * Guardrails
+   * Audit logging
+
+4. Scalability
+
+   * Community-specific configuration
+   * No community-specific rules hardcoded into agent logic
+   * Core workflow reusable across communities
+   * Configuration-driven business rules
+
+5. Deployment
+
+   * GitHub repository
+   * Feature-wise commits
+   * Vercel deployment
+   * Production environment variables
+   * README with setup instructions
+
+---
+
+# 2. Technology Stack
+
+Use the following technologies.
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* shadcn/ui or another clean component library if useful
+* Lucide icons
+
+### Backend
+
+Use the Next.js application itself.
+
+* Next.js Route Handlers / Server Actions
+* TypeScript
+* Service-layer architecture
+
+Do NOT create a separate backend unless technically necessary.
+
+### Database
+
+Use:
+
+* SQLite
+* Prisma ORM
+
+The application must keep database access behind Prisma/repository/service layers so SQLite can later be replaced with PostgreSQL without rewriting business logic.
+
+### AI
+
+Use an LLM API through a server-side service.
+
+Preferred:
+
+* OpenAI API
+
+But structure the code so the provider can be changed later.
+
+Never expose the LLM API key to the browser.
+
+### Deployment
+
+* GitHub
+* Vercel
+
+---
+
+# 3. High-Level Architecture
+
+Implement the following architecture:
+
+```
+                ┌─────────────────────┐
+                │      RESIDENT       │
+                │                     │
+                │  Next.js Web UI     │
+                └──────────┬──────────┘
+                           │
+                           ↓
+                ┌─────────────────────┐
+                │     Next.js API     │
+                │   / Server Actions  │
+                └──────────┬──────────┘
+                           │
+                           ↓
+                ┌─────────────────────┐
+                │ Agent Orchestrator  │
+                │                     │
+                │ Intent              │
+                │ Context             │
+                │ State               │
+                │ Validation          │
+                │ Tool Selection      │
+                │ Guardrails          │
+                └──────────┬──────────┘
+                           │
+           ┌───────────────┼────────────────┐
+           │               │                │
+           ↓               ↓                ↓
+   Community Config   Request Service   Validation
+           │               │                │
+           └───────────────┼────────────────┘
+                           ↓
+                     Prisma ORM
+                           ↓
+                        SQLite
+
+
+                ┌─────────────────────┐
+                │       ADMIN         │
+                │     Dashboard       │
+                └──────────┬──────────┘
+                           │
+                           ↓
+                 Admin Review APIs
+                           │
+                           ↓
+                 Request / Agent State
+```
+
+---
+
+# 4. Folder Architecture
+
+Use a clean scalable structure similar to:
+
+src/
+app/
+page.tsx
+
+```
+resident/
+  page.tsx
+  move-in/
+    page.tsx
+  move-out/
+    page.tsx
+  requests/
+    page.tsx
+    [id]/
+      page.tsx
+
+admin/
+  page.tsx
+  requests/
+    page.tsx
+    [id]/
+      page.tsx
+
+api/
+  communities/
+  requests/
+  agent/
+  admin/
+```
+
+components/
+ui/
+resident/
+admin/
+agent/
+requests/
+
+lib/
+db/
+agent/
+services/
+validation/
+rules/
+utils/
+
+prisma/
+schema.prisma
+seed.ts
+
+types/
+request.ts
+community.ts
+agent.ts
+
+tests/
+
+docs/
+
+Important:
+Keep UI, business logic, database access and agent logic separated.
+
+---
+
+# 5. Core Data Model
+
+Use Prisma.
+
+Start with these entities.
+
+## Community
+
+Fields:
+
+* id
+* name
+* config
+* createdAt
+* updatedAt
+
+`config` can contain JSON configuration for the prototype.
+
+Example:
+
+{
+"moveIn": {
+"allowedDays": [
+"MONDAY",
+"TUESDAY",
+"WEDNESDAY",
+"THURSDAY",
+"FRIDAY",
+"SATURDAY"
+],
+"startTime": "09:00",
+"endTime": "18:00",
+"noticePeriodDays": 2
+},
+"moveOut": {
+"allowedDays": [
+"MONDAY",
+"TUESDAY",
+"WEDNESDAY",
+"THURSDAY",
+"FRIDAY",
+"SATURDAY"
+],
+"noticePeriodDays": 7
+}
+}
+
+Do not hardcode these rules in the agent.
+
+---
+
+## Resident
+
+Fields:
+
+* id
+* name
+* email
+* phone
+* apartmentNumber
+* communityId
+* createdAt
+* updatedAt
+
+---
+
+## MoveRequest
+
+Fields:
+
+* id
+* requestNumber
+* type
+* residentId
+* communityId
+* status
+* moveDate
+* moveTime
+* apartmentNumber
+* movingCompany
+* vehicleDetails
+* documents
+* reason
+* agentSummary
+* agentRecommendation
+* adminNotes
+* createdAt
+* updatedAt
+
+Type:
+
+MOVE_IN
+MOVE_OUT
+
+Status:
+
+DRAFT
+SUBMITTED
+UNDER_REVIEW
+MORE_INFORMATION_REQUIRED
+APPROVED
+REJECTED
+COMPLETED
+
+---
+
+## AuditLog
+
+Fields:
+
+* id
+* requestId
+* actorType
+* actorId
+* action
+* details
+* createdAt
+
+Actor:
+
+RESIDENT
+ADMIN
+AGENT
+SYSTEM
+
+Log important actions such as:
+
+* request created
+* request updated
+* agent validation
+* request submitted
+* admin opened request
+* information requested
+* request approved
+* request rejected
+
+---
+
+# 6. Resident Journey — Move-In
+
+Implement the following workflow.
+
+## Step 1
+
+Resident opens dashboard.
+
+Display:
+
+* Move In
+* Move Out
+* Existing requests
+
+## Step 2
+
+Resident selects Move In.
+
+Open Agentic Move-In Assistant.
+
+The user should be able to interact using natural language.
+
+Example:
+
+User:
+
+"I want to move in next Saturday at 5 PM."
+
+Agent should extract:
+
+* request type
+* date
+* time
+
+## Step 3
+
+Agent checks the current request state.
+
+Identify missing information.
+
+For example:
+
+* apartment number
+* moving company
+* vehicle information
+
+Ask only for missing information.
+
+Do not repeatedly ask for information already provided.
+
+## Step 4
+
+Agent checks community configuration.
+
+Validate:
+
+* allowed day
+* allowed time
+* notice period
+* required information
+
+## Step 5
+
+If invalid:
+
+Explain the problem clearly.
+
+Example:
+
+"Move-ins are allowed Monday-Saturday between 9 AM and 6 PM. Sunday at 8 PM is not available."
+
+If possible, provide the next valid option.
+
+## Step 6
+
+Once complete, show a structured summary.
+
+Example:
+
+Move-In Request
+
+Apartment:
+A-1204
+
+Date:
+12 October 2026
+
+Time:
+5:00 PM
+
+Moving Company:
+XYZ Movers
+
+Vehicle:
+KA01AB1234
+
+Community Rules:
+✓ Date allowed
+✓ Time allowed
+✓ Required information complete
+
+Buttons:
+
+[Edit]
+[Confirm & Submit]
+
+## Step 7
+
+After confirmation:
+
+Create MoveRequest.
+
+Status:
+
+SUBMITTED
+
+Then:
+
+UNDER_REVIEW
+
+Create AuditLog.
+
+---
+
+# 7. Resident Journey — Move-Out
+
+Build a separate move-out flow.
+
+Collect relevant information such as:
+
+* move-out date
+* preferred time
+* apartment number
+* moving company
+* vehicle details
+* reason, optional
+* other required information
+
+Apply community move-out configuration.
+
+Example:
+
+Notice period:
+7 days
+
+If resident tries:
+
+"I want to move out tomorrow."
+
+Agent should identify that the request violates the configured notice period.
+
+Explain the issue and provide a valid alternative.
+
+---
+
+# 8. Resident Request Tracking
+
+Create:
+
+/resident/requests
+
+Show:
+
+* request number
+* type
+* date
+* status
+* submitted date
+* latest admin message
+
+Request detail should show a timeline:
+
+Created
+↓
+Submitted
+↓
+Under Review
+↓
+More Information Required
+↓
+Submitted Again
+↓
+Approved
+
+Only show states that actually occurred.
+
+---
+
+# 9. Admin Dashboard
+
+Create:
+
+/admin
+
+Dashboard should show:
+
+* total requests
+* pending requests
+* move-in requests
+* move-out requests
+* approved requests
+* requests requiring information
+
+Also show a request table.
+
+Columns:
+
+* Request ID
+* Resident
+* Apartment
+* Type
+* Date
+* Status
+* Created At
+* Action
+
+Add filtering:
+
+* Move-In
+* Move-Out
+* Pending
+* Approved
+* Rejected
+* More Information Required
+
+---
+
+# 10. Admin Request Review
+
+Create:
+
+/admin/requests/[id]
+
+Show complete context.
+
+Sections:
+
+## Resident
+
+Name
+Email
+Phone
+Apartment
+
+## Request
+
+Type
+Date
+Time
+Moving company
+Vehicle
+Reason
+Documents
+
+## Community Rules
+
+Relevant move-in/move-out rules.
+
+## AI Assessment
+
+Example:
+
+AI Summary:
+
+"The resident has provided all required information. The requested date and time comply with the community's move-in policy."
+
+AI Recommendation:
+
+APPROVE
+
+Confidence/reasoning should be presented carefully.
+
+Do NOT imply that AI made the final decision.
+
+## Admin Actions
+
+Buttons:
+
+[Approve]
+[Request More Information]
+[Reject]
+
+Admin can add a note.
+
+---
+
+# 11. Agent Responsibilities
+
+The agent should perform these tasks.
+
+## Agent CAN
+
+* Understand natural language
+* Extract structured information
+* Maintain conversation context
+* Maintain request state
+* Identify missing fields
+* Retrieve community configuration
+* Validate requests
+* Explain rule violations
+* Suggest alternatives
+* Generate request summaries
+* Generate admin recommendations
+
+## Agent CANNOT independently
+
+* Override community rules
+* Approve requests
+* Reject requests
+* Perform irreversible actions without confirmation
+* Change critical information silently
+
+Final approval/rejection remains with the administrator.
+
+This creates a human-in-the-loop workflow.
+
+---
+
+# 12. Agent Tools
+
+Implement tools/services conceptually as:
+
+getCommunityConfig()
+
+getMoveRequest()
+
+createMoveRequest()
+
+updateMoveRequest()
+
+validateMoveRequest()
+
+getAvailableSlots()
+
+submitMoveRequest()
+
+getRequestStatus()
+
+generateRequestSummary()
+
+generateAdminRecommendation()
+
+requestMoreInformation()
+
+approveMoveRequest()
+
+rejectMoveRequest()
+
+These do not necessarily need to be exposed as literal external MCP tools.
+
+They can initially be internal TypeScript services.
+
+The architecture should make it possible to expose them as MCP tools later.
+
+---
+
+# 13. Agent Workflow
+
+Implement this flow:
+
+User message
+↓
+Determine intent
+↓
+Load request state
+↓
+Load community configuration
+↓
+Extract information
+↓
+Merge information into request state
+↓
+Check missing information
+↓
+If missing → ask user
+↓
+If complete → validate
+↓
+Check community rules
+↓
+If invalid → explain + suggest alternative
+↓
+If valid → generate summary
+↓
+Ask for user confirmation
+↓
+Submit request
+↓
+Admin review
+↓
+AI generates assessment
+↓
+Admin makes final decision
+↓
+Update request status
+↓
+Create audit log
+
+---
+
+# 14. Important Agent Design Principle
+
+Do NOT allow the LLM to directly control database operations.
+
+Use:
+
+LLM
+↓
+Structured intent/action
+↓
+Application validation
+↓
+Service/tool
+↓
+Database
+
+For example:
+
+LLM says:
+
+"approve request"
+
+Do NOT directly approve.
+
+Instead:
+
+LLM recommendation
+↓
+Admin sees recommendation
+↓
+Admin clicks Approve
+↓
+Backend validates authorization
+↓
+Database updated
+
+This is a critical safety/architecture requirement.
+
+---
+
+# 15. AI Structured Output
+
+Use structured JSON output from the LLM.
+
+Example:
+
+{
+"intent": "CREATE_MOVE_IN_REQUEST",
+"extractedData": {
+"moveDate": "2026-10-12",
+"moveTime": "17:00"
+},
+"missingFields": [
+"movingCompany",
+"vehicleDetails"
+],
+"nextQuestion": "What moving company will you be using?"
+}
+
+Do not rely on parsing arbitrary natural-language LLM responses for important application logic.
+
+---
+
+# 16. Validation
+
+Use deterministic validation in TypeScript/Zod.
+
+LLM:
+
+* understands language
+
+Application:
+
+* validates data
+
+Database:
+
+* stores data
+
+Community configuration:
+
+* defines rules
+
+This separation is important.
+
+Example:
+
+LLM:
+
+"next Saturday"
+
+↓
+
+Date parser
+
+↓
+
+2026-10-10
+
+↓
+
+Zod validation
+
+↓
+
+Community rule validation
+
+---
+
+# 17. Demo Scenarios
+
+Build at least these scenarios.
+
+## Scenario 1 — Successful Move-In
+
+User:
+
+"I want to move in next Saturday at 5 PM."
+
+Agent collects missing information.
+
+Request becomes complete.
+
+Resident confirms.
+
+Admin approves.
+
+Resident sees:
+
+APPROVED.
+
+---
+
+## Scenario 2 — Rule Violation
+
+User:
+
+"I want to move in Sunday at 8 PM."
+
+Agent checks community configuration.
+
+Agent explains:
+
+"Sunday move-ins are not allowed and the latest move-in time is 6 PM."
+
+Agent suggests a valid alternative.
+
+---
+
+## Scenario 3 — Missing Information
+
+User submits incomplete request.
+
+Agent detects:
+
+Vehicle information missing.
+
+Agent asks for it.
+
+User provides it.
+
+Agent continues from existing state.
+
+It must NOT restart the entire conversation.
+
+---
+
+## Scenario 4 — Admin Requests Information
+
+Admin reviews request.
+
+Admin clicks:
+
+Request More Information.
+
+Admin enters:
+
+"Please provide vehicle registration."
+
+Request status:
+
+MORE_INFORMATION_REQUIRED
+
+Resident sees the message.
+
+Resident updates request.
+
+Request goes back to:
+
+UNDER_REVIEW.
+
+---
+
+## Scenario 5 — Move-Out Notice Period
+
+Community configuration:
+
+7-day notice.
+
+Resident asks to move out tomorrow.
+
+Agent explains that the requested date does not meet the configured notice period.
+
+---
+
+# 18. UI Requirements
+
+The UI should look like a real SaaS/product prototype rather than a basic coding assignment.
+
+Use:
+
+* responsive layout
+* sidebar/dashboard navigation
+* cards
+* status badges
+* timeline
+* tables
+* dialogs
+* loading states
+* empty states
+* error states
+* confirmation dialogs
+* toast notifications
+
+Use a consistent visual system.
+
+Avoid excessive animations.
+
+Prioritize usability.
+
+---
+
+# 19. Loading/Error States
+
+Implement:
+
+Agent thinking/loading state:
+
+"Agent is checking community rules..."
+
+Database loading state.
+
+Request submission loading state.
+
+Admin approval loading state.
+
+API error handling.
+
+LLM failure handling.
+
+If the LLM is unavailable, the application should not completely break.
+
+Provide a fallback message or allow structured form completion.
+
+---
+
+# 20. Agent Failure Recovery
+
+If the LLM fails:
+
+1. Preserve existing request state.
+2. Do not lose user-entered information.
+3. Show a clear error.
+4. Allow the user to continue using structured fields.
+5. Do not create duplicate requests.
+
+If a database operation fails:
+
+* show error
+* do not falsely display success
+* maintain request state where possible
+
+---
+
+# 21. Security
+
+For the prototype:
+
+* Keep API keys server-side.
+* Never expose LLM keys to frontend.
+* Validate all incoming API data.
+* Do not trust LLM-generated actions.
+* Validate request ownership.
+* Validate admin actions server-side.
+* Do not allow client-side status manipulation.
+* Sanitize/validate user input.
+
+Demo authentication can be simplified if necessary.
+
+Clearly document that production authentication would use real identity/RBAC.
+
+---
+
+# 22. Testing
+
+Add tests for important business logic.
+
+At minimum:
+
+1. Valid move-in date
+2. Invalid move-in day
+3. Invalid move-in time
+4. Notice period violation
+5. Missing information detection
+6. Request state transitions
+7. Admin approval
+8. Admin rejection
+9. Request-more-information flow
+10. Audit log creation
+
+Use unit tests for deterministic logic.
+
+Do not attempt to make LLM responses completely deterministic.
+
+Test the agent through representative scenarios.
+
+---
+
+# 23. Seed Data
+
+Create Prisma seed data.
+
+At least:
+
+### Community
+
+Green Valley Apartments
+
+Rules:
+
+Move-in:
+Monday-Saturday
+9 AM-6 PM
+
+Move-out:
+Monday-Saturday
+
+Notice:
+7 days
+
+### Residents
+
+John Doe
+Apartment A-1204
+
+Jane Smith
+Apartment B-2203
+
+### Example requests
+
+One pending move-in.
+
+One pending move-out.
+
+One approved request.
+
+One request requiring information.
+
+This makes the demo immediately usable.
+
+---
+
+# 24. Feature-wise Git Commit Requirement
+
+IMPORTANT:
+
+Do NOT build the entire project and make one final commit.
+
+Every meaningful feature must have its own commit.
+
+Use commit messages such as:
+
+1.
+
+feat: initialize Next.js TypeScript project
+
+2.
+
+feat: configure Tailwind and UI components
+
+3.
+
+feat: add Prisma SQLite database
+
+4.
+
+feat: add community and resident models
+
+5.
+
+feat: add seed demo data
+
+6.
+
+feat: add resident dashboard
+
+7.
+
+feat: add admin dashboard
+
+8.
+
+feat: add move-in request workflow
+
+9.
+
+feat: add move-out request workflow
+
+10.
+
+feat: add request status tracking
+
+11.
+
+feat: add community configuration
+
+12.
+
+feat: add deterministic request validation
+
+13.
+
+feat: add agent orchestration layer
+
+14.
+
+feat: add natural language request extraction
+
+15.
+
+feat: add missing information detection
+
+16.
+
+feat: add community rule validation to agent
+
+17.
+
+feat: add agent request summary
+
+18.
+
+feat: add admin AI assessment
+
+19.
+
+feat: add admin approval workflow
+
+20.
+
+feat: add request information workflow
+
+21.
+
+feat: add audit logging
+
+22.
+
+feat: add agent failure recovery
+
+23.
+
+test: add move request validation tests
+
+24.
+
+test: add request status transition tests
+
+25.
+
+test: add admin workflow tests
+
+26.
+
+docs: add architecture documentation
+
+27.
+
+docs: add setup and deployment instructions
+
+28.
+
+chore: prepare production environment
+
+29.
+
+fix: resolve Vercel deployment issues
+
+Do not squash all commits into one.
+
+---
+
+# 25. Git Workflow
+
+Use:
+
+main
+│
+├── feature/resident-workflow
+├── feature/admin-workflow
+├── feature/agent
+└── feature/deployment
+
+If working alone, feature branches are optional, but commit history must still clearly show incremental development.
+
+Before every commit:
+
+* run lint
+* run tests where applicable
+* verify application builds
+
+Example:
+
+npm run lint
+npm test
+npm run build
+
+Then commit.
+
+---
+
+# 26. GitHub README
+
+README must contain:
+
+# ANACITY Move-In / Move-Out Agentic Workflow
+
+## Overview
+
+## Features
+
+## Architecture
+
+## Agent Design
+
+## Tech Stack
+
+## Database
+
+## Local Setup
+
+## Environment Variables
+
+## Running the Application
+
+## Running Tests
+
+## Demo Accounts
+
+## Example Scenarios
+
+## Deployment
+
+## Limitations
+
+## Production Considerations
+
+## Future Improvements
+
+---
+
+# 27. Environment Variables
+
+Use:
+
+DATABASE_URL
+
+OPENAI_API_KEY
+
+Do not commit `.env`.
+
+Create:
+
+`.env.example`
+
+Example:
+
+DATABASE_URL="file:./dev.db"
+
+OPENAI_API_KEY="your-api-key"
+
+---
+
+# 28. Vercel Deployment
+
+Before deployment:
+
+1. Push repository to GitHub.
+2. Connect repository to Vercel.
+3. Configure environment variables.
+4. Build application.
+5. Verify production deployment.
+6. Test resident workflow.
+7. Test admin workflow.
+8. Test AI workflow.
+9. Verify database behavior.
+
+IMPORTANT:
+
+SQLite is primarily being used for the prototype/development environment.
+
+If Vercel's serverless environment prevents persistent SQLite writes, do not fake persistence.
+
+Instead migrate the Prisma datasource to a hosted PostgreSQL-compatible database such as Supabase while preserving the same repository/service architecture.
+
+The code should therefore avoid coupling business logic directly to SQLite.
+
+---
+
+# 29. Production Scalability Explanation
+
+The explanation document must state:
+
+### Prototype
+
+Next.js
++
+Prisma
++
+SQLite
++
+LLM
+
+### Production
+
+Next.js
++
+Prisma
++
+PostgreSQL
++
+LLM provider
++
+real authentication
++
+RBAC
++
+notification service
++
+observability
++
+audit logging
+
+The core agent workflow remains the same.
+
+Community configuration remains data-driven.
+
+---
+
+# 30. Explanation Document
+
+Create:
+
+docs/EXPLANATION.md
+
+Include:
+
+## 1. Problem Interpretation
+
+Explain the move-in/move-out problem.
+
+## 2. User Journeys
+
+Explain:
+
+* resident move-in
+* resident move-out
+* admin move-in
+* admin move-out
+
+## 3. Agent Design
+
+Explain:
+
+* intent detection
+* context
+* state
+* tools
+* validation
+* autonomy
+* human-in-the-loop
+
+## 4. Architecture
+
+Include architecture diagram.
+
+## 5. Data Model
+
+Explain each table/entity.
+
+## 6. Community Scalability
+
+Explain why rules/configuration are external to agent logic.
+
+## 7. AI vs Deterministic Logic
+
+Explicitly explain:
+
+LLM:
+Natural-language understanding
+Extraction
+Summarization
+Recommendation
+
+Application:
+Validation
+Authorization
+Rules
+State transitions
+Database updates
+
+## 8. Guardrails
+
+Explain why the agent cannot directly approve/reject requests.
+
+## 9. Assumptions
+
+Document every major assumption.
+
+## 10. Testing
+
+Document test scenarios and results.
+
+## 11. Failure Recovery
+
+Explain LLM/database failures.
+
+## 12. Limitations
+
+Explain prototype limitations.
+
+## 13. Production Considerations
+
+Explain:
+
+* PostgreSQL
+* authentication
+* RBAC
+* observability
+* rate limiting
+* notifications
+* document storage
+* audit
+* model monitoring
+
+## 14. Future Improvements
+
+Potential future additions:
+
+* MCP tools
+* notifications
+* calendar integration
+* document verification
+* real community integrations
+* multi-agent architecture if justified
+
+---
+
+# 31. Important Design Constraints
+
+Do NOT:
+
+* create a generic chatbot with no workflow
+* hardcode community rules inside agent prompts
+* let the LLM directly update database state
+* allow AI to independently approve/reject requests
+* expose API keys in frontend
+* lose request state between messages
+* create duplicate requests
+* build unnecessary microservices
+* over-engineer the prototype
+
+DO:
+
+* make the workflow obvious
+* make AI value obvious
+* maintain structured state
+* use community configuration
+* keep deterministic logic deterministic
+* provide human approval
+* maintain audit history
+* provide meaningful error handling
+* make the prototype easy to demo
+
+---
+
+# 32. Final Demo Flow
+
+The final demonstration should take approximately 5-8 minutes.
+
+### Part 1 — Resident
+
+Login/select Resident.
+
+Show:
+
+Move-In.
+
+Say:
+
+"I want to move in next Saturday at 5 PM."
+
+Agent asks for missing information.
+
+Provide information.
+
+Show validation.
+
+Confirm.
+
+Submit.
+
+Show request status.
+
+### Part 2 — Admin
+
+Switch to Admin.
+
+Show pending request.
+
+Open request.
+
+Show:
+
+* resident context
+* request details
+* community rules
+* AI summary
+* AI recommendation
+
+Approve.
+
+### Part 3 — Resident
+
+Return to resident.
+
+Show:
+
+APPROVED.
+
+### Part 4 — Failure Case
+
+Create another request.
+
+Ask:
+
+"I want to move in Sunday at 8 PM."
+
+Show the agent identifying the community rule violation and suggesting an alternative.
+
+### Part 5 — Explain Architecture
+
+Show architecture diagram.
+
+Explain:
+
+LLM
++
+Agent
++
+Community configuration
++
+Validation
++
+Human approval
++
+Audit
+
+---
+
+# 33. Definition of Done
+
+The project is complete only when:
+
+[ ] Resident can create Move-In request.
+
+[ ] Resident can create Move-Out request.
+
+[ ] Agent understands natural-language input.
+
+[ ] Agent maintains request state.
+
+[ ] Agent identifies missing information.
+
+[ ] Community-specific rules are configurable.
+
+[ ] Agent validates against community rules.
+
+[ ] Resident must confirm before submission.
+
+[ ] Admin can view requests.
+
+[ ] Admin can review full context.
+
+[ ] Admin can see AI summary/recommendation.
+
+[ ] Admin can approve.
+
+[ ] Admin can reject.
+
+[ ] Admin can request additional information.
+
+[ ] Resident can see updated status.
+
+[ ] Audit logs are created.
+
+[ ] LLM failure does not destroy request state.
+
+[ ] Validation is performed server-side.
+
+[ ] API keys are secure.
+
+[ ] Tests exist for core business logic.
+
+[ ] README exists.
+
+[ ] Explanation document exists.
+
+[ ] Feature-wise Git commits exist.
+
+[ ] GitHub repository is complete.
+
+[ ] Vercel deployment works.
+
+[ ] Production environment variables are configured.
+
+[ ] Final demo scenarios work.
+
+---
+
+# 34. Development Order
+
+Follow this order strictly:
+
+PHASE 1
+Project setup
+
+↓
+
+PHASE 2
+Database + Prisma + seed
+
+↓
+
+PHASE 3
+Resident UI
+
+↓
+
+PHASE 4
+Admin UI
+
+↓
+
+PHASE 5
+Move-In workflow
+
+↓
+
+PHASE 6
+Move-Out workflow
+
+↓
+
+PHASE 7
+Request state/status
+
+↓
+
+PHASE 8
+Community configuration
+
+↓
+
+PHASE 9
+Deterministic validation
+
+↓
+
+PHASE 10
+Agent orchestration
+
+↓
+
+PHASE 11
+Natural-language extraction
+
+↓
+
+PHASE 12
+Missing information handling
+
+↓
+
+PHASE 13
+AI validation/summary
+
+↓
+
+PHASE 14
+Admin AI assessment
+
+↓
+
+PHASE 15
+Admin actions
+
+↓
+
+PHASE 16
+Audit logging
+
+↓
+
+PHASE 17
+Error handling/failure recovery
+
+↓
+
+PHASE 18
+Testing
+
+↓
+
+PHASE 19
+Documentation
+
+↓
+
+PHASE 20
+GitHub cleanup
+
+↓
+
+PHASE 21
+Vercel deployment
+
+↓
+
+PHASE 22
+End-to-end testing
+
+↓
+
+PHASE 23
+Final demo preparation
+
+---
+
+# 35. Final Principle
+
+The prototype should communicate this architecture clearly:
+
+```
+                NATURAL LANGUAGE
+                       ↓
+                     AGENT
+                       ↓
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+       CONTEXT       RULES        STATE
+          │            │            │
+          └────────────┼────────────┘
+                       ↓
+                   VALIDATION
+                       ↓
+                HUMAN CONFIRMATION
+                       ↓
+                 ADMIN DECISION
+                       ↓
+                     AUDIT
+```
+
+The goal is not to demonstrate "an AI chatbot."
+
+The goal is to demonstrate:
+
+"An AI-assisted, stateful, rule-aware, human-in-the-loop workflow that can support different communities without changing the core application logic."
