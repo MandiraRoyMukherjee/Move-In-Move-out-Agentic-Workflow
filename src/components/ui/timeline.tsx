@@ -95,6 +95,11 @@ export function Timeline({ events, className }: TimelineProps) {
                 &quot;{String(detailObj.notes)}&quot;
               </p>
             )}
+            {detailObj?.info != null && (
+              <p className="mt-1 text-sm text-gray-700 bg-blue-50 rounded px-3 py-2 border border-blue-100 whitespace-pre-wrap">
+                {String(detailObj.info)}
+              </p>
+            )}
           </li>
         );
       })}
