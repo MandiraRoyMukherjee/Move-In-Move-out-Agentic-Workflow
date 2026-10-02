@@ -8,16 +8,17 @@ import { parseCommunityConfig } from "@/lib/db/repositories/community.repository
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Timeline } from "@/components/ui/timeline";
+import { ResubmitPanel } from "@/components/resident/resubmit-panel";
 import { formatDate, formatTime, formatDateTime } from "@/lib/utils";
 import {
   ArrowLeft,
+  AlertCircle,
   Calendar,
   Clock,
   Building2,
   Truck,
   Car,
   Bot,
-  AlertCircle,
   CheckCircle,
 } from "lucide-react";
 
@@ -72,18 +73,14 @@ export default async function ResidentRequestDetailPage({ params }: Props) {
         </p>
       </div>
 
-      {/* Admin message banner */}
+      {/* Resubmit panel — shown when admin requests more info */}
       {request.status === "MORE_INFORMATION_REQUIRED" && request.adminNotes && (
-        <div className="mb-6 flex gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-orange-800">
-              Admin needs more information
-            </p>
-            <p className="text-sm text-orange-700 mt-1">
-              &ldquo;{request.adminNotes}&rdquo;
-            </p>
-          </div>
+        <div className="mb-6">
+          <ResubmitPanel
+            requestId={request.id}
+            residentId={request.residentId}
+            adminMessage={request.adminNotes}
+          />
         </div>
       )}
 
