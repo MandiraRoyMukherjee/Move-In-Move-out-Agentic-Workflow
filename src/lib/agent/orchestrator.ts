@@ -28,9 +28,9 @@ import {
 import {
   detectMissingFields,
   validateAgainstCommunityRules,
-  FIELD_LABELS,
   type MoveRequestData,
 } from "@/lib/validation/request.validation";
+import { getNextQuestion } from "@/lib/agent/missing-info";
 import { getCommunityConfig } from "@/lib/services/community.service";
 import type { AgentResponse, ConversationState } from "@/types/agent";
 
@@ -134,11 +134,7 @@ export async function orchestrate(
 
   // ── 6. If still missing — ask for next field ───────────────────────────────
   if (missing.length > 0) {
-    const nextField = missing[0];
-    const question =
-      llmOutput.nextQuestion ??
-      `Could you please provide your ${FIELD_LABELS[nextField] ?? nextField}?`;
-
+    const question = getNextQuestion(missing, llmOutput.nextQuestion);
     const assistantMessage = question;
     const updatedState: ConversationState = {
       ...existingState,
